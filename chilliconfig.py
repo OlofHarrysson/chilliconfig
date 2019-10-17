@@ -14,18 +14,36 @@ import functools
 # @dataclass
 class MasterConfig(ABC):
     # The config name
-    name: str
+    # name: str
 
-    # self.config = config
+    def __init__(self, name):
+      self.class_name = name # Remove name. Should be printed but not in config?
+
+      self._frozen = True
+
 
     # Freezes the config after setup, turning it immutable
     # freeze_config: bool = True
 
     def get_parameters(self):
-        return OrderedDict(sorted(vars(self).items()))
+      params = vars(self)
+      # print(params)
+      frozen = params.pop('_frozen')
+      # print(name)
+      # print(frozen)
+      # print(params)
+      # qwe
+      return OrderedDict(sorted(params.items()))
 
-    # def __str__(self):
-    #     return pprint.pformat(dict(self.get_parameters()))
+    def __str__(self):
+        params = self.get_parameters()
+        name = params.pop('class_name')
+
+        print(params)
+        # params = dict(name=dict(params))
+        params = dict(params)
+        # qwe
+        return pprint.pformat(params)
 
     def freeze(self):
         ''' Freezes object, making it immutable '''
@@ -110,10 +128,24 @@ def overwrite(config_obj):
     return config_obj
 
 
+# def config_class_old(func):
+#     print("WOOW")
+#     print(func)
+#     qwe
+#     class_name = func.__name__
+#     err_msg = (f"Can't decorate '{class_name}' of type {type(func)}. "
+#                "Can only be used for classes")
+#     assert inspect.isclass(func), err_msg
+#     err_msg = (f"Can't decorate '{class_name}' since it's not a sublass of "
+#                "'chilliconfig.MasterConfig'")
+#     assert issubclass(func, MasterConfig), err_msg
+#     setattr(sys.modules[__name__], class_name, func)
+
+
 def config_class_old(func):
-    print("WOOW")
-    print(func)
-    qwe
+    # print("WOOW")
+    # print(func)
+    # qwe
     class_name = func.__name__
     err_msg = (f"Can't decorate '{class_name}' of type {type(func)}. "
                "Can only be used for classes")
@@ -122,17 +154,6 @@ def config_class_old(func):
                "'chilliconfig.MasterConfig'")
     assert issubclass(func, MasterConfig), err_msg
     setattr(sys.modules[__name__], class_name, func)
-
-
-# @dataclass
-# def config_class(_cls=None,
-#                  *,
-#                  init=True,
-#                  repr=True,
-#                  eq=True,
-#                  order=False,
-#                  unsafe_hash=False,
-#                  frozen=False):
 
 
 def config_class(_cls=None,
