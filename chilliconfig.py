@@ -11,39 +11,23 @@ import argparse
 import functools
 
 
-# @dataclass
+@dataclass
 class MasterConfig(ABC):
-    # The config name
-    # name: str
+    config: str
 
-    def __init__(self, name):
-      self.class_name = name # Remove name. Should be printed but not in config?
-
-      self._frozen = True
-
-
-    # Freezes the config after setup, turning it immutable
-    # freeze_config: bool = True
+    # _frozen: bool = True
+    freeze_config: bool = True
 
     def get_parameters(self):
-      params = vars(self)
-      # print(params)
-      frozen = params.pop('_frozen')
-      # print(name)
-      # print(frozen)
-      # print(params)
-      # qwe
-      return OrderedDict(sorted(params.items()))
+        params = vars(self)
+        # print(params)
+        # qweeeee
+        # frozen = params.pop('_frozen')
+        return OrderedDict(sorted(params.items()))
 
     def __str__(self):
         params = self.get_parameters()
-        name = params.pop('class_name')
-
-        print(params)
-        # params = dict(name=dict(params))
-        params = dict(params)
-        # qwe
-        return pprint.pformat(params)
+        return pprint.pformat(dict(self.get_parameters()))
 
     def freeze(self):
         ''' Freezes object, making it immutable '''
@@ -89,8 +73,8 @@ def choose_config(config_str):
     config_obj = overwrite(config_obj)
 
     # # Freezes config
-    # if config_obj.freeze_config:
-    #     config_obj.freeze()
+    if config_obj.freeze_config:
+        config_obj.freeze()
     return config_obj
 
 
@@ -99,7 +83,7 @@ def get_available_configs():
     for name, obj in inspect.getmembers(sys.modules[__name__]):
         if inspect.isclass(obj) and issubclass(obj, MasterConfig):
             available_configs[name] = obj
-    print(available_configs)
+    # print(available_configs)
     available_configs.pop('MasterConfig')
     return available_configs
 
@@ -128,24 +112,7 @@ def overwrite(config_obj):
     return config_obj
 
 
-# def config_class_old(func):
-#     print("WOOW")
-#     print(func)
-#     qwe
-#     class_name = func.__name__
-#     err_msg = (f"Can't decorate '{class_name}' of type {type(func)}. "
-#                "Can only be used for classes")
-#     assert inspect.isclass(func), err_msg
-#     err_msg = (f"Can't decorate '{class_name}' since it's not a sublass of "
-#                "'chilliconfig.MasterConfig'")
-#     assert issubclass(func, MasterConfig), err_msg
-#     setattr(sys.modules[__name__], class_name, func)
-
-
-def config_class_old(func):
-    # print("WOOW")
-    # print(func)
-    # qwe
+def config_class(func):
     class_name = func.__name__
     err_msg = (f"Can't decorate '{class_name}' of type {type(func)}. "
                "Can only be used for classes")
@@ -154,65 +121,4 @@ def config_class_old(func):
                "'chilliconfig.MasterConfig'")
     assert issubclass(func, MasterConfig), err_msg
     setattr(sys.modules[__name__], class_name, func)
-
-
-def config_class(_cls=None,
-                 *,
-                 init=True,
-                 repr=True,
-                 eq=True,
-                 order=False,
-                 unsafe_hash=False,
-                 frozen=False):
-    print(f'Class: {_cls}')
-    print(frozen)
-    d = dataclass(_cls,
-                  init=init,
-                  repr=repr,
-                  eq=eq,
-                  order=order,
-                  unsafe_hash=unsafe_hash,
-                  frozen=frozen)
-
-    def my_return(func):  # becomes cookie
-        print("MY RETURN")
-        print(func)
-        # qwe
-
-        @functools.wraps(func)
-        def my_wrap(f):
-            print("MY WRAP")
-            print(f)
-            print(func)
-
-            func1 = func(f)
-            class_name = func1.__name__
-            err_msg = (f"Can't decorate '{class_name}' of type {type(func1)}. "
-                       "Can only be used for classes")
-            assert inspect.isclass(func1), err_msg
-            err_msg = (
-                f"Can't decorate '{class_name}' since it's not a sublass of "
-                "'chilliconfig.MasterConfig'")
-            assert issubclass(func1, MasterConfig), err_msg
-            setattr(sys.modules[__name__], class_name, func1)
-            # print(func1(f))
-            return func
-
-        # print(func.__name__)
-
-        return my_wrap
-
-    return my_return(d)
-
-    # return my_return
-
-    def wrap(cls):
-        return _process_class(cls, init, repr, eq, order, unsafe_hash, frozen)
-
-    # See if we're being called as @dataclass or @dataclass().
-    if _cls is None:
-        # We're called with parens.
-        return wrap
-
-    # We're called as @dataclass without parens.
-    return wrap(_cls)
+    return func
