@@ -1,11 +1,14 @@
 # from user_config import OlofConfig
 from chilliconfig import config_class, MasterConfig, setup_config
+import chilliconfig
 import time
 from dataclasses import dataclass
 from typing import Callable, Iterator, Union, Optional, List
 import imgaug as ia
 import imgaug.augmenters as iaa
 import inspect
+import pickle
+import numpy as np
 
 
 class Transformer():
@@ -57,17 +60,33 @@ class Train(MainConfig):
     self.classes = ['dog']
     # self.class_obj = MyClass()
     # self.transforms = Transformer()
-    # self.func_transforms = transforms()
-    self.func_transforms = inspect.getsource(transforms)
+    self.func_transforms = transforms()
+    # self.func_transforms = inspect.getsource(transforms)
     # print(self.func_transforms)
     # print(type(self.func_transforms))
     # qwe
 
 
+def test_config(cfg):
+  transforms = cfg.func_transforms
+  images = np.array([ia.quokka(size=(64, 64)) for _ in range(32)],
+                    dtype=np.uint8)
+  print(type(transforms))
+  print(transforms)
+  images_aug = transforms(images=images)
+  print(images_aug.shape)
+
+
 def main():
   # config = setup_config()
   config = setup_config(default_config='Train')
-  print(config)
+  # print(config)
+  test_config(config)
+  pth = 'config.cfg'
+  config.save(pth)
+  config2 = chilliconfig.load_config(pth)
+  print(config2)
+  test_config(config2)
   # print("\n\n")
   # print(repr(config))
   # config.name = 'New name'

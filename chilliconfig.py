@@ -10,11 +10,18 @@ import fire
 import inspect
 import argparse
 import functools
+import pickle
 
 from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter, TerminalFormatter
 from pygments.formatters import get_formatter_for_filename
+
+
+def load_config(path):
+  print("Loading config")
+  with open(path, 'rb') as f:
+    return pickle.load(f)
 
 
 @dataclass
@@ -29,6 +36,11 @@ class MasterConfig(ABC):
 
   # _frozen: bool = True
   freeze_config: bool = True
+
+  def save(self, path):
+    print("Saving config")
+    with open(path, 'wb') as f:
+      pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 
   def get_parameters(self):
     params = vars(self)
@@ -54,7 +66,7 @@ class MasterConfig(ABC):
         s = pprint.pformat({key: val})
       ss = f'{ss}{s}\n'
 
-    # return ss
+    return ss
     print(ss)
     qwe
     # return ss
