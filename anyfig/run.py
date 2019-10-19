@@ -1,12 +1,4 @@
-from user_config import OlofConfig, user_muli
-from chilliconfig import config_class, MasterConfig, setup_config, print_source
-import chilliconfig
-import time
-from dataclasses import dataclass
-from typing import Callable, Iterator, Union, Optional, List
-import inspect
-import pickle
-import numpy as np
+import anyfig
 
 
 @print_source

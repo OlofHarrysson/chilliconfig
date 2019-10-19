@@ -1,12 +1,5 @@
-from user_config import OlofConfig, user_muli
-from chilliconfig import config_class, MasterConfig, setup_config, print_source
-import chilliconfig
-import time
-from dataclasses import dataclass
-from typing import Callable, Iterator, Union, Optional, List
-import inspect
-import pickle
-import numpy as np
+from anyfig import print_source, config_class, MasterConfig
+import anyfig
 
 
 @print_source
@@ -54,21 +47,8 @@ class Train(MasterConfig):
 
 
 def main():
-  # config = setup_config()
-  config = setup_config(default_config='Train')
-  parameters = config.get_parameters()
-  print(parameters)
-  # params = str(config)
-  params = config.__dict__
-  print(params)
-  qwe
-
-  # config.frozen()
-  # config.frozen(freeze=False)
-  config.name = '123123'
-
+  config = anyfig.setup_config(default_config='Train')
   print(config)
-  # print(config.name)
 
 
 if __name__ == '__main__':
