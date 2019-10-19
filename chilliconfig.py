@@ -35,29 +35,23 @@ def print_source(func):
   assert inspect.isclass(func), err_msg
 
   def __print_source__(self):
-    src = inspect.getsource(self.__class__) + '\n'
+    # Newline makes indention better
+    src = '\n' + inspect.getsource(self.__class__)
 
     # Get my source. Get my childrens sources
-    for key, val in vars(self).items():
+    unique_classes = {v.__class__: v for k, v in vars(self).items()}
+    for key, val in unique_classes.items():
       if hasattr(val, '__anyfig_print_source__'):
         src += __print_source__(val)
 
+    # Add one indention.
+    # TODO: Source code can have different indention than \t
+    # Make it a config to anyfig?
+    src = src.replace('\n', '\n  ')
     return src
 
   setattr(func, '__anyfig_print_source__', __print_source__)
   return func
-
-
-class SourceCode():
-  def __str__(self):
-    src = inspect.getsource(self.__class__) + '\n'
-
-    # Get my source. Get my childrens sources
-    for key, val in vars(self).items():
-      if issubclass(val.__class__, SourceCode):
-        src += str(val)
-
-    return src
 
 
 def load_config(path):

@@ -1,5 +1,5 @@
 from user_config import OlofConfig, user_muli
-from chilliconfig import config_class, MasterConfig, setup_config, SourceCode, print_source
+from chilliconfig import config_class, MasterConfig, setup_config, print_source
 import chilliconfig
 import time
 from dataclasses import dataclass
@@ -20,11 +20,21 @@ class Noise():
 
 
 @print_source
+class Flip():
+  def __init__(self, x, y):
+    self.x = x
+    self.y = y
+    self.noise3 = Noise(1, 2)
+
+
+@print_source
 class Transformer():
   def __init__(self, x):
     self.noise1 = Noise(3, 0)
+    self.flip = Flip(4, 0)
     self.noise2 = Noise(4, 0)
     self.primitive = 12
+    self.prim2 = 1
 
 
 # @config_class
@@ -45,9 +55,9 @@ class Train(MasterConfig):
   def __init__(self, name):
     super().__init__(name)
     self.classes = ['dog']
+    self.transforms111 = Transformer(100)
     self.img_size = 10
-    # self.transforms111 = Transformer(100)
-    self.fff = transforms()
+    # self.fff = transforms()
 
   @chilliconfig.config_func
   def init_trans(self):
