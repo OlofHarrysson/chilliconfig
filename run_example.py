@@ -1,15 +1,14 @@
-from anyfig import print_source, config_class, MasterConfig
 import anyfig
 
 
-@print_source
+@anyfig.print_source
 class Noise():
   def __init__(self, x, y):
     self.x = x
     self.y = y
 
 
-@print_source
+@anyfig.print_source
 class Flip():
   def __init__(self, x, y):
     self.x = x
@@ -17,7 +16,7 @@ class Flip():
     self.noise3 = Noise(1, 2)
 
 
-@print_source
+@anyfig.print_source
 class Transformer():
   def __init__(self, x):
     # self.noise1 = Noise(x, x)
@@ -36,8 +35,8 @@ class Transformer():
 #     self.freeze_config = False
 
 
-@config_class
-class Train(MasterConfig):
+@anyfig.config_class
+class Train(anyfig.MasterConfig):
   def __init__(self):
     super().__init__()
     self.name = 'oldname'
