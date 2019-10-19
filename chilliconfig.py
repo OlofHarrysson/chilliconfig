@@ -13,12 +13,6 @@ import functools
 import pickle
 from collections import defaultdict
 
-import builtins
-
-default_setattr = None
-# print(default_setattr)
-# qwe
-
 
 def load_config(path):
   # TODO: Add checks so that object is config
@@ -37,88 +31,14 @@ def save_config(config_obj, path):
     f.write(str(config_obj))
 
 
-def freeze(config_obj):
-  ''' Freezes object, making it immutable '''
-  pass
-
-  # def frozen_handler(self, name, value):
-  #   err_msg = (
-  #     f"Cannot assign to field '{name}'. Config object is frozen. "
-  #     "Change 'freeze_config' to False if you want a mutable config object")
-  #   raise FrozenInstanceError(err_msg)
-
-  # @functools.wraps(MasterConfig.__setattr__)
-  # def frozen_handler(*args, **kwargs):
-  #   print("BEFORE WRAP")
-  #   # print(args)
-  #   # print(name)
-  #   # print(value)
-  #   # print(type(args))
-  #   print(MasterConfig.__setattr__)
-  #   # setattr(*args, **kwargs)
-  #   # value = MasterConfig.__setattr__(*args, **kwargs)
-  #   # qew
-  #   # setattr(self, name, value)
-  #   print("AFTER WRAP")
-  # return self, name, value
-
-  # return frozen_handler(config_obj)
-
-  # def frozen_handler(self, name, value):
-  #   print(name)
-  #   print("OWOWOWOOOWOEOFNEOIFNEOIFN")
-  #   err_msg = (
-  #     f"Cannot assign to field '{name}'. Config object is frozen. "
-  #     "Change 'freeze_config' to False if you want a mutable config object")
-  #   raise FrozenInstanceError(err_msg)
-
-  # Wrap __setattrs__ so that it goes through my function first. If __frozen__=True or something, then raise error, else continue.
-  # To unfreeze, we turn the __frozen__ of.
-
-  # frozen_handler(MasterConfig.__setattr__)
-  # print(config_obj.__setattr__)
-  # print(MasterConfig.__setattr__)
-  # setattr(MasterConfig, '__setattr__', setattr)
-  # print(MasterConfig.__setattr__)
-
-  # print(config_obj.__setattr__)
-  # setattr(config_obj, '__setattr__', frozen_handler)
-  # print(config_obj.__setattr__)
-  # qweqwe
-
-
-def unfreeze(config_obj):
-  ''' Freezes object, making it immutable '''
-  # def frozen_handler(self, name, value):
-  #   err_msg = (f"NO LONGER UNFROZEN :D")
-  #   raise FrozenInstanceError(err_msg)
-
-  print("Unfreezing config")
-  print(default_setattr)
-  print(replace)
-
-  print(config_obj.__class__)
-  av = get_available_configs()
-  print(av)
-
-  copy = config_obj.__class__
-  copy = copy()
-  print(copy)
-
-  # print(dir(config_obj))
-  # new = replace(vars(config_obj))
-  # print(new)
-  qwe
-  setattr()
-  config_obj.__setattr__(name, value)
-  setattr(MasterConfig, '__setattr__', default_setattr)
-
-
 @dataclass
 class MasterConfig(ABC):
   def __init__(self):
-    self.__frozen: bool = False
+    self._frozen: bool = False
     self.config_class = type(self).__name__
+
+  def frozen(self, freeze=True):
+    self._frozen = freeze
 
   def get_parameters(self):
     return OrderedDict(sorted(vars(self).items()))
@@ -126,7 +46,7 @@ class MasterConfig(ABC):
   def __str__(self):
     str_ = ""
     params = vars(self)
-    params.pop('_MasterConfig__frozen')  # Dont print frozen
+    params.pop('_frozen')  # Dont print frozen
     for key, val in params.items():
       if hasattr(val, '__anyfig_print_source__'):
         cls_str = val.__anyfig_print_source__()
@@ -141,20 +61,25 @@ class MasterConfig(ABC):
     return str_
 
   def __setattr__(self, name, value):
-    if hasattr(self, '_MasterConfig__frozen'):
-      if name == '_MasterConfig__frozen':
+    # Check for reserved names
+    name_taken_msg = f"The attribute '{name}' can't be assigned to config '{type(self).__name__}' since it already has a method by that name"
+
+    def assert_name(name, method_name):
+      assert name != method_name, name_taken_msg
+
+    methods = inspect.getmembers(self, predicate=inspect.ismethod)
+    [assert_name(name, m[0]) for m in methods]
+
+    # Raise error unless we're trying to unfreeze the config
+    if hasattr(self, '_frozen'):
+      if name == '_frozen':
         pass
-      elif self._MasterConfig__frozen:
-        err_msg = (
-          f"Cannot assign to field '{name}'. Config object is frozen. "
-          "Change 'freeze_config' to False if you want a mutable config object"
-        )
+      elif self._frozen:
+        err_msg = (f"Cannot set attribute '{name}'. Config object is frozen. "
+                   "Unfreeze the config for a mutable config object")
         raise FrozenInstanceError(err_msg)
 
     object.__setattr__(self, name, value)
-
-  def frozen(self, freeze=True):
-    self._MasterConfig__frozen = freeze
 
 
 def setup_config(default_config=None):  # TODO: Handle None
@@ -189,8 +114,7 @@ def choose_config(config_str):
   config_obj = overwrite(config_obj)
 
   # Freezes config
-  # if config_obj.freeze_config:
-  #   config_obj.freeze()
+  config_obj.frozen(freeze=True)
   return config_obj
 
 
