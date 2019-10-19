@@ -11,11 +11,42 @@ import inspect
 import argparse
 import functools
 import pickle
+from collections import defaultdict
+
+from dill.source import getsource
 
 from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter, TerminalFormatter
 from pygments.formatters import get_formatter_for_filename
+
+RECORD_STATE = 0
+RECORDED_FUNCTIONS = defaultdict(list)
+RECORD_COUNTER = 0
+
+recorded_funcs = dict()
+
+
+class SourceCode():
+  def __init__(self):
+    self.members = []
+
+  def add_membs(self, memb):
+    self.members.append(memb)
+
+  def __str__(self):
+    # qweqwe
+    ss = ''
+    # print(self.__class__)
+    src = inspect.getsource(self.__class__)
+    # print(src)
+    # qwe
+
+    ss = src + '\n'
+
+    for memb in self.members:
+      ss += str(memb) + '\n'
+    return ss
 
 
 def load_config(path):
@@ -50,6 +81,32 @@ class MasterConfig(ABC):
     return OrderedDict(sorted(params.items()))
 
   def __str__(self):
+    # # print(RECORDED_FUNCTIONS)
+    # new = replace_with_first()
+    # print(new)
+    # # print(recorded_funcs)
+    # # print(dir(self))
+    # qewyyy
+    # # eeeee
+    params = vars(self)
+    for key, val in params.items():
+      # print(key, val)
+      cls_ = val.__class__
+      if issubclass(cls_, SourceCode):
+        print(key)
+        # print(cls_)
+        # src = inspect.getsource(cls_)
+        # print(src)
+
+        # print(repr(cls_))
+        print(cls_)
+        print(val)
+
+        # print(src2)
+        # eee
+      # print(val)
+      # print(type(val))
+    qwe
     params = self.get_parameters()
     params = dict(self.get_parameters())
     ss = ""
@@ -159,18 +216,14 @@ def overwrite(config_obj):
 
 
 def config_class(func):
-  class_name = func.__name__
-  err_msg = (f"Can't decorate '{class_name}' of type {type(func)}. "
-             "Can only be used for classes")
-  assert inspect.isclass(func), err_msg
-  err_msg = (f"Can't decorate '{class_name}' since it's not a sublass of "
-             "'chilliconfig.MasterConfig'")
-  assert issubclass(func, MasterConfig), err_msg
-  setattr(sys.modules[__name__], class_name, func)
-  return func
+  # PLUGINS = dict() # TODO at start of file
+  # PLUGINS[func.__name__] = func instead of adding it to our module
+  # print(inspect.getsource(func))
+  # class_def = inspect.getsourcelines(func)
+  # for cd in class_def:
+  #   print(cd)
+  # qew
 
-
-def config_class(func):
   class_name = func.__name__
   err_msg = (f"Can't decorate '{class_name}' of type {type(func)}. "
              "Can only be used for classes")
@@ -187,3 +240,59 @@ def config_class(func):
                    order=False,
                    unsafe_hash=False,
                    frozen=False)
+
+
+def replace_with_first():
+  new = dict()
+  for key, val in RECORDED_FUNCTIONS.items():
+    first_ele = repr(val[0])
+    new[first_ele] = val
+  return new
+
+
+def config_func(func):
+  recorded_funcs[repr(func)] = func
+
+  @functools.wraps(func)
+  def wrap(*args, **kwargs):
+    mod = sys.modules[__name__]
+
+    # Looks in stack and see what line called you
+    curframe = inspect.currentframe()
+    calframe = inspect.getouterframes(curframe, 1)
+    called_line = calframe[1][4][0]
+
+    # Get the attribute name
+    called_var_name = called_line.replace('self.', '').split(' = ')[0].strip()
+    # Save attribute name + func?
+    # print(called_var_name)
+    # print(func)
+    # print(mod.RECORDED_FUNCTIONS)
+    # TODO
+
+    if mod.RECORD_STATE == 0:
+      mod.RECORD_COUNTER += 1
+    # print(RECORD_STATE)
+
+    mod.RECORD_STATE += 1
+    # print(mod.RECORD_STATE)
+    # print(func)
+    mod.RECORDED_FUNCTIONS[mod.RECORD_COUNTER].append(func)
+    value = func(*args, **kwargs)
+    mod.RECORD_STATE -= 1
+    if mod.RECORD_STATE == 0:
+      mod.RECORD_COUNTER += 1
+
+    # print(mod.RECORD_STATE)
+    return value
+
+  # for name, obj in inspect.getmembers(sys.modules[__name__]):
+  #   print(name)
+  # qwe
+
+  return wrap
+  # return func
+
+
+def show_source(func):
+  return func
