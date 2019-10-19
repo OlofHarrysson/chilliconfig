@@ -61,16 +61,7 @@ class MasterConfig(ABC):
     return str_
 
   def __setattr__(self, name, value):
-    # Check for reserved names
-    name_taken_msg = f"The attribute '{name}' can't be assigned to config '{type(self).__name__}' since it already has a method by that name"
-
-    def assert_name(name, method_name):
-      assert name != method_name, name_taken_msg
-
-    methods = inspect.getmembers(self, predicate=inspect.ismethod)
-    [assert_name(name, m[0]) for m in methods]
-
-    # Raise error unless we're trying to unfreeze the config
+    # Raise error if frozen unless we're trying to unfreeze the config
     if hasattr(self, '_frozen'):
       if name == '_frozen':
         pass
@@ -79,6 +70,14 @@ class MasterConfig(ABC):
                    "Unfreeze the config for a mutable config object")
         raise FrozenInstanceError(err_msg)
 
+    # Check for reserved names
+    name_taken_msg = f"The attribute '{name}' can't be assigned to config '{type(self).__name__}' since it already has a method by that name"
+
+    def assert_name(name, method_name):
+      assert name != method_name, name_taken_msg
+
+    methods = inspect.getmembers(self, predicate=inspect.ismethod)
+    [assert_name(name, m[0]) for m in methods]
     object.__setattr__(self, name, value)
 
 
@@ -162,13 +161,7 @@ def config_class(func):
   assert issubclass(func, MasterConfig), err_msg
   setattr(sys.modules[__name__], class_name, func)
 
-  return dataclass(func,
-                   init=True,
-                   repr=False,
-                   eq=False,
-                   order=False,
-                   unsafe_hash=False,
-                   frozen=False)
+  return func
 
 
 def print_source(func):
