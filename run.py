@@ -1,5 +1,5 @@
 from user_config import OlofConfig, user_muli
-from chilliconfig import config_class, MasterConfig, setup_config, SourceCode
+from chilliconfig import config_class, MasterConfig, setup_config, SourceCode, print_source
 import chilliconfig
 import time
 from dataclasses import dataclass
@@ -17,7 +17,8 @@ import numpy as np
 # Transformer has all transform classes. Should be able to print them
 
 
-class Noise(SourceCode):
+@print_source
+class Noise():
   def __init__(self, x, y):
     self.x = x
     self.y = y
@@ -26,27 +27,23 @@ class Noise(SourceCode):
 # @source_code # Should be able to add __str__ function on decorator
 # Now we check if subclass of, but maybe that can change
 # Maybe limit the number of times a function is showed as source code
-class Transformer(SourceCode):
+# class Transformer(SourceCode):
+#   def __init__(self, x):
+#     self.noise1 = Noise(3, 0)
+#     self.noise2 = Noise(4, 0)
+#     self.primitive = 12
+#     # self.noise2 = Noise(3, 222)
+
+#     # self.add_membs(Noise(3, 0))
+#     # pass
+
+
+@print_source
+class Transformer():
   def __init__(self, x):
     self.noise1 = Noise(3, 0)
     self.noise2 = Noise(4, 0)
     self.primitive = 12
-    # self.noise2 = Noise(3, 222)
-
-    # self.add_membs(Noise(3, 0))
-    # pass
-
-  # def __repr__(self):
-  # return super(repr())
-
-  # def __str__(self):
-  # return super().__str__()
-  # return "I AM TRANSFORMER"
-
-  # return repr(self.seq)
-  # return "I AM TRANSFORMER"
-
-  # return str(self.seq)
 
 
 # @config_class
@@ -113,6 +110,8 @@ def transforms():
 # Fall 1 - när man sparar kod så måste man se source code. Also print source
 
 
+# @print_source
+# @config_class(print_source=True)
 @config_class
 class Train(MasterConfig):
   def __init__(self, name):

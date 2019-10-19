@@ -27,18 +27,25 @@ RECORD_COUNTER = 0
 recorded_funcs = dict()
 
 
-def do_string(obj):
-  ss = ""
-  params = vars(obj)
-  for key, val in params.items():
-    if issubclass(val.__class__, SourceCode):
-      cls_str = str(val)
-      s = f"{{'{key}': \n{cls_str}}}"
-    else:
-      s = pprint.pformat({key: val})
-    ss = f'{ss}{s}\n'
+def print_source(func):
+  print(func)
+  class_name = func.__name__
+  err_msg = (f"Can't decorate '{class_name}' of type {type(func)}. "
+             "Can only be used for classes")
+  assert inspect.isclass(func), err_msg
 
-  return ss
+  def __print_source__(self):
+    src = inspect.getsource(self.__class__) + '\n'
+
+    # Get my source. Get my childrens sources
+    for key, val in vars(self).items():
+      if hasattr(val, '__anyfig_print_source__'):
+        src += __print_source__(val)
+
+    return src
+
+  setattr(func, '__anyfig_print_source__', __print_source__)
+  return func
 
 
 class SourceCode():
@@ -78,18 +85,13 @@ class MasterConfig(ABC):
       pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 
   def get_parameters(self):
-    params = vars(self)
-    # print(params)
-    # qweeeee
-    # frozen = params.pop('_frozen')
-    return OrderedDict(sorted(params.items()))
+    return OrderedDict(sorted(vars(self).items()))
 
   def __str__(self):
     ss = ""
-    params = vars(self)
-    for key, val in params.items():
-      if issubclass(val.__class__, SourceCode):
-        cls_str = str(val)
+    for key, val in vars(self).items():
+      if hasattr(val, '__anyfig_print_source__'):
+        cls_str = val.__anyfig_print_source__()
         s = f"{{'{key}': \n{cls_str}}}"
       else:
         s = pprint.pformat({key: val})
