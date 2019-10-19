@@ -23,3 +23,7 @@ Should have a function to register the config object in the anyfig module which 
 
 Name suggestions:
 Anyfig
+
+
+
+Do we want to let users be able to create several configs? The fire/argparse doesn't work then. Unless we hook into that and divides it... But not for v1
