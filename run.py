@@ -11,7 +11,6 @@ import pickle
 import numpy as np
 
 
-# Maybe limit the number of times a function is showed as source code
 @print_source
 class Noise():
   def __init__(self, x, y):
@@ -55,13 +54,21 @@ class Train(MasterConfig):
   def __init__(self, name):
     super().__init__(name)
     self.classes = ['dog']
+    self.mydict = {
+      '0': '2',
+      '1': '2',
+      '2': '2',
+      '3': '2',
+      '4': '2',
+      '4asdasd': '2',
+      '4qweqweqwe': '2',
+      'qweqweqwesd4': '2',
+      '4asdasdd': '2',
+      '4ertert': '2',
+    }
     self.transforms111 = Transformer(100)
     self.img_size = 10
-    # self.fff = transforms()
-
-  @chilliconfig.config_func
-  def init_trans(self):
-    return transforms()
+    self.save = 123
 
 
 def test_config(cfg):

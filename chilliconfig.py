@@ -13,46 +13,6 @@ import functools
 import pickle
 from collections import defaultdict
 
-from dill.source import getsource
-
-from pygments import highlight
-from pygments.lexers import PythonLexer
-from pygments.formatters import HtmlFormatter, TerminalFormatter
-from pygments.formatters import get_formatter_for_filename
-
-RECORD_STATE = 0
-RECORDED_FUNCTIONS = defaultdict(list)
-RECORD_COUNTER = 0
-
-recorded_funcs = dict()
-
-
-def print_source(func):
-  class_name = func.__name__
-  err_msg = (f"Can't decorate '{class_name}' of type {type(func)}. "
-             "Can only be used for classes")
-
-  assert inspect.isclass(func), err_msg
-
-  def __print_source__(self):
-    # Newline makes indention better
-    src = '\n' + inspect.getsource(self.__class__)
-
-    # Get my source. Get my childrens sources
-    unique_classes = {v.__class__: v for k, v in vars(self).items()}
-    for key, val in unique_classes.items():
-      if hasattr(val, '__anyfig_print_source__'):
-        src += __print_source__(val)
-
-    # Add one indention.
-    # TODO: Source code can have different indention than \t
-    # Make it a config to anyfig?
-    src = src.replace('\n', '\n  ')
-    return src
-
-  setattr(func, '__anyfig_print_source__', __print_source__)
-  return func
-
 
 def load_config(path):
   print("Loading config")
@@ -62,12 +22,6 @@ def load_config(path):
 
 @dataclass
 class MasterConfig(ABC):
-  # def __init__(self, config):
-  #   self.config = config
-  #   self.freeze_config = True
-  #   print("MASTER FONCIFG INIIIIT")
-
-  print("I AM MASTERCONFIG")
   config: str
 
   # _frozen: bool = True
@@ -82,16 +36,19 @@ class MasterConfig(ABC):
     return OrderedDict(sorted(vars(self).items()))
 
   def __str__(self):
-    ss = ""
+    str_ = ""
     for key, val in vars(self).items():
       if hasattr(val, '__anyfig_print_source__'):
         cls_str = val.__anyfig_print_source__()
-        s = f"{{'{key}': \n{cls_str}}}"
+        s = f"'{key}':\n{cls_str}"
       else:
         s = pprint.pformat({key: val})
-      ss = f'{ss}{s}\n'
 
-    return ss
+        # Prettyprint adds some extra wings that I dont like
+        s = s.lstrip('{').rstrip('}').replace('\n ', '\n')
+      str_ += s + '\n'
+
+    return str_
 
   def freeze(self):
     ''' Freezes object, making it immutable '''
@@ -176,14 +133,6 @@ def overwrite(config_obj):
 
 
 def config_class(func):
-  # PLUGINS = dict() # TODO at start of file
-  # PLUGINS[func.__name__] = func instead of adding it to our module
-  # print(inspect.getsource(func))
-  # class_def = inspect.getsourcelines(func)
-  # for cd in class_def:
-  #   print(cd)
-  # qew
-
   class_name = func.__name__
   err_msg = (f"Can't decorate '{class_name}' of type {type(func)}. "
              "Can only be used for classes")
@@ -202,57 +151,29 @@ def config_class(func):
                    frozen=False)
 
 
-def replace_with_first():
-  new = dict()
-  for key, val in RECORDED_FUNCTIONS.items():
-    first_ele = repr(val[0])
-    new[first_ele] = val
-  return new
+def print_source(func):
+  class_name = func.__name__
+  err_msg = (f"Can't decorate '{class_name}' of type {type(func)}. "
+             "Can only be used for classes")
 
+  assert inspect.isclass(func), err_msg
 
-def config_func(func):
-  recorded_funcs[repr(func)] = func
+  def __print_source__(self):
+    ''' Get my source. Get my childrens sources '''
 
-  @functools.wraps(func)
-  def wrap(*args, **kwargs):
-    mod = sys.modules[__name__]
+    # Newline makes indention better
+    src = '\n' + inspect.getsource(self.__class__)
 
-    # Looks in stack and see what line called you
-    curframe = inspect.currentframe()
-    calframe = inspect.getouterframes(curframe, 1)
-    called_line = calframe[1][4][0]
+    unique_classes = {v.__class__: v for k, v in vars(self).items()}
+    for key, val in unique_classes.items():
+      if hasattr(val, '__anyfig_print_source__'):
+        src += __print_source__(val)
 
-    # Get the attribute name
-    called_var_name = called_line.replace('self.', '').split(' = ')[0].strip()
-    # Save attribute name + func?
-    # print(called_var_name)
-    # print(func)
-    # print(mod.RECORDED_FUNCTIONS)
-    # TODO
+    # TODO: Source code can have different indention than \t
+    # Make it a config to anyfig?
+    # Adds one indention
+    src = src.replace('\n', '\n  ')
+    return src
 
-    if mod.RECORD_STATE == 0:
-      mod.RECORD_COUNTER += 1
-    # print(RECORD_STATE)
-
-    mod.RECORD_STATE += 1
-    # print(mod.RECORD_STATE)
-    # print(func)
-    mod.RECORDED_FUNCTIONS[mod.RECORD_COUNTER].append(func)
-    value = func(*args, **kwargs)
-    mod.RECORD_STATE -= 1
-    if mod.RECORD_STATE == 0:
-      mod.RECORD_COUNTER += 1
-
-    # print(mod.RECORD_STATE)
-    return value
-
-  # for name, obj in inspect.getmembers(sys.modules[__name__]):
-  #   print(name)
-  # qwe
-
-  return wrap
-  # return func
-
-
-def show_source(func):
+  setattr(func, '__anyfig_print_source__', __print_source__)
   return func
