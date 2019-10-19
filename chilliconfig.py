@@ -28,10 +28,10 @@ recorded_funcs = dict()
 
 
 def print_source(func):
-  print(func)
   class_name = func.__name__
   err_msg = (f"Can't decorate '{class_name}' of type {type(func)}. "
              "Can only be used for classes")
+
   assert inspect.isclass(func), err_msg
 
   def __print_source__(self):

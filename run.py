@@ -10,32 +10,13 @@ import inspect
 import pickle
 import numpy as np
 
-# Source_code class. When printed, it returns the source code.
-# Can I have a list of classes or something? I want to have chains
-# List of classes in config?
 
-# Transformer has all transform classes. Should be able to print them
-
-
+# Maybe limit the number of times a function is showed as source code
 @print_source
 class Noise():
   def __init__(self, x, y):
     self.x = x
     self.y = y
-
-
-# @source_code # Should be able to add __str__ function on decorator
-# Now we check if subclass of, but maybe that can change
-# Maybe limit the number of times a function is showed as source code
-# class Transformer(SourceCode):
-#   def __init__(self, x):
-#     self.noise1 = Noise(3, 0)
-#     self.noise2 = Noise(4, 0)
-#     self.primitive = 12
-#     # self.noise2 = Noise(3, 222)
-
-#     # self.add_membs(Noise(3, 0))
-#     # pass
 
 
 @print_source
@@ -57,59 +38,6 @@ class Transformer():
 #     self.freeze_config = False
 
 
-# @dataclass
-class MyClass():
-  # bajs = 100
-  # korv: int = bajs * 2
-  def __init__(self):
-    self.bsize = 100
-
-
-# @chilliconfig.config_func
-# def transforms():
-#   mm(1)
-#   return iaa.Sequential([
-#     iaa.Crop(px=(0, 16)),
-#     iaa.Fliplr(
-#       0.5
-#     ),  # JUST COMMEENT TO MAKE THIS LINE REALLY LONG GOT DAMNIT WOWOOWOWOWOWOWOWOWOWOOWWOOWOWWOWOWOWOOWOWOW
-#     iaa.GaussianBlur(sigma=(0, 3.0))
-#   ])
-
-
-# @chilliconfig.config_func
-def mm(x):
-  return x
-
-
-@chilliconfig.config_func
-def muli(x, y):
-  mm(x)
-  return x * y
-
-
-@chilliconfig.config_func
-class MyTrans():
-  def __init__(self):
-    pass
-
-  # hook into call
-  def __call__(self):
-    x = y + 1
-    return muli(1, 2)
-
-
-@chilliconfig.config_func
-def transforms():
-  x = 1 + 3
-  y = x + 5
-  z = muli(x, y)
-  return z
-
-
-# Fall 1 - när man sparar kod så måste man se source code. Also print source
-
-
 # @print_source
 # @config_class(print_source=True)
 @config_class
@@ -118,8 +46,8 @@ class Train(MasterConfig):
     super().__init__(name)
     self.classes = ['dog']
     self.img_size = 10
-    self.class_obj = MyClass()
-    self.transforms111 = Transformer(100)
+    # self.transforms111 = Transformer(100)
+    self.fff = transforms()
 
   @chilliconfig.config_func
   def init_trans(self):
