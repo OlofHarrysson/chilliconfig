@@ -19,35 +19,22 @@ import numpy as np
 
 class Noise(SourceCode):
   def __init__(self, x, y):
-    super().__init__()
     self.x = x
     self.y = y
 
-  def __call__(self):
-    x = 1 + 3
-    y = x + 5
-    z = muli(x, y)
-    return z
 
-  # def __repr__(self):
-  #   return f'Noise(x={self.x},y={self.y})'
-
-
-# @source_code
+# @source_code # Should be able to add __str__ function on decorator
+# Now we check if subclass of, but maybe that can change
+# Maybe limit the number of times a function is showed as source code
 class Transformer(SourceCode):
-  def __init__(self):
-    super().__init__()
+  def __init__(self, x):
+    self.noise1 = Noise(3, 0)
+    self.noise2 = Noise(4, 0)
+    self.primitive = 12
+    # self.noise2 = Noise(3, 222)
 
-    self.add_membs(Noise(1, 2))
-    self.add_membs(Noise(3, 0))
-
-  # Make this in parent? Call classes in order of appearance
-  def __call__(self):
-    self.noise()
-    x = 1 + 3
-    y = x + 5
-    z = muli(x, y)
-    return z
+    # self.add_membs(Noise(3, 0))
+    # pass
 
   # def __repr__(self):
   # return super(repr())
@@ -132,28 +119,8 @@ class Train(MasterConfig):
     super().__init__(name)
     self.classes = ['dog']
     self.img_size = 10
-    # self.class_obj = MyClass()
-    self.transforms111 = Transformer()
-    # self.transforms111 = [Noise(3,4), FlipLR(12)]
-    # self.transforms111 = [add_noise(5, 7), fliplr(12)]
-    print("BEFORE TRANSFORM")
-
-    # @chilliconfig.show_source
-    # self.func_transforms = transforms()
-    # self.func_transforms = transforms()
-    print("AFTER TRANSFORM")
-    # self.mulikorv = lambda: user_muli(1, 2)
-
-    # self.milikorv = MyTrans()
-
-    # self.f_trans = self.init_trans()
-
-    # a = chilliconfig.RECORDED_FUNCTIONS
-    # print(a)
-    # self.func_transforms = inspect.getsource(transforms)
-    # print(self.func_transforms)
-    # print(type(self.func_transforms))
-    # qwe
+    self.class_obj = MyClass()
+    self.transforms111 = Transformer(100)
 
   @chilliconfig.config_func
   def init_trans(self):

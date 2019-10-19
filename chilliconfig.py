@@ -27,26 +27,30 @@ RECORD_COUNTER = 0
 recorded_funcs = dict()
 
 
+def do_string(obj):
+  ss = ""
+  params = vars(obj)
+  for key, val in params.items():
+    if issubclass(val.__class__, SourceCode):
+      cls_str = str(val)
+      s = f"{{'{key}': \n{cls_str}}}"
+    else:
+      s = pprint.pformat({key: val})
+    ss = f'{ss}{s}\n'
+
+  return ss
+
+
 class SourceCode():
-  def __init__(self):
-    self.members = []
-
-  def add_membs(self, memb):
-    self.members.append(memb)
-
   def __str__(self):
-    # qweqwe
-    ss = ''
-    # print(self.__class__)
-    src = inspect.getsource(self.__class__)
-    # print(src)
-    # qwe
+    src = inspect.getsource(self.__class__) + '\n'
 
-    ss = src + '\n'
+    # Get my source. Get my childrens sources
+    for key, val in vars(self).items():
+      if issubclass(val.__class__, SourceCode):
+        src += str(val)
 
-    for memb in self.members:
-      ss += str(memb) + '\n'
-    return ss
+    return src
 
 
 def load_config(path):
@@ -81,57 +85,17 @@ class MasterConfig(ABC):
     return OrderedDict(sorted(params.items()))
 
   def __str__(self):
-    # # print(RECORDED_FUNCTIONS)
-    # new = replace_with_first()
-    # print(new)
-    # # print(recorded_funcs)
-    # # print(dir(self))
-    # qewyyy
-    # # eeeee
+    ss = ""
     params = vars(self)
     for key, val in params.items():
-      # print(key, val)
-      cls_ = val.__class__
-      if issubclass(cls_, SourceCode):
-        print(key)
-        # print(cls_)
-        # src = inspect.getsource(cls_)
-        # print(src)
-
-        # print(repr(cls_))
-        print(cls_)
-        print(val)
-
-        # print(src2)
-        # eee
-      # print(val)
-      # print(type(val))
-    qwe
-    params = self.get_parameters()
-    params = dict(self.get_parameters())
-    ss = ""
-    for key, val in params.items():
-      # print(key)
-      # print(val)
-      if isinstance(val, str) and '\n' in val:
-        # print(val)
-        # qweeeeee
-        val = highlight(val, PythonLexer(), TerminalFormatter())
-        s = f"{{'{key}': \n{val}}}"
+      if issubclass(val.__class__, SourceCode):
+        cls_str = str(val)
+        s = f"{{'{key}': \n{cls_str}}}"
       else:
-        # s = f'{key}={val}\n'
         s = pprint.pformat({key: val})
       ss = f'{ss}{s}\n'
 
     return ss
-    print(ss)
-    qwe
-    # return ss
-    # print(params)
-    # return "{" + "\n".join("{!r}: {!r},".format(k, v)
-    #                        for k, v in params.items()) + "}"
-    # return params
-    return pprint.pformat(params)
 
   def freeze(self):
     ''' Freezes object, making it immutable '''
